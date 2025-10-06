@@ -1,0 +1,157 @@
+.prompt-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.prompt-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.prompt-textarea:focus {
+  border-color: #007bff;
+}
+
+.prompt-textarea:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.attachments-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.url-input input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.url-input input:focus {
+  border-color: #007bff;
+}
+
+.url-input input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.file-drop-zone {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+}
+
+.file-drop-zone:hover {
+  border-color: #007bff;
+  background-color: #f0f8ff;
+}
+
+.file-drop-zone.drag-active {
+  border-color: #007bff;
+  background-color: #e7f3ff;
+}
+
+.drop-zone-content {
+  color: #666;
+  font-size: 16px;
+}
+
+.drop-zone-content span {
+  pointer-events: none;
+}
+
+.attachments-list {
+  margin-top: 10px;
+}
+
+.attachments-list h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 14px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 5px;
+}
+
+.attachment-name {
+  font-size: 14px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.remove-attachment {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  margin-left: 10px;
+  line-height: 1;
+}
+
+.remove-attachment:hover {
+  color: #c82333;
+}
+
+.remove-attachment:disabled {
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.submit-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  min-width: 150px;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.submit-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}

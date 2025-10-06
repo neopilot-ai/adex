@@ -1,0 +1,139 @@
+.diff-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.patch-container {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.patch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.patch-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.patch-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.re-prompt-button, .reject-button, .accept-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.re-prompt-button {
+  background-color: #ffc107;
+  color: #212529;
+  border-color: #ffc107;
+}
+
+.re-prompt-button:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+}
+
+.reject-button {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.reject-button:hover:not(:disabled) {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.reject-button:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.accept-button {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.accept-button:hover:not(:disabled) {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.accept-button:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.patch-explanation {
+  padding: 15px 20px;
+  background-color: #e7f3ff;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  color: #333;
+}
+
+.patch-explanation strong {
+  color: #007bff;
+}
+
+.diff-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Style the react-diff-viewer */
+.diff-content .react-diff-viewer {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.diff-content .react-diff-viewer .diff-line {
+  padding: 2px 0;
+}
+
+.bulk-actions {
+  text-align: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.apply-all-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  min-width: 200px;
+}
+
+.apply-all-button:hover {
+  background-color: #0056b3;
+}
