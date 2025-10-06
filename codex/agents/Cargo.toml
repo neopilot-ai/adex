@@ -1,0 +1,21 @@
+[package]
+name = "codex-agents"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+async-trait = "0.1"
+anyhow = "1.0"
+
+# Local agent dependencies
+codex-spec-agent = { path = "../spec" }
+codex-code-agent = { path = "../code" }
+codex-test-generator-agent = { path = "../test-generator" }
+codex-reviewer-agent = { path = "../reviewer" }
+codex-debug-agent = { path = "../debug" }
+
+[dev-dependencies]
+tokio-test = "0.4"
