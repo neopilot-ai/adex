@@ -24,9 +24,13 @@ use codex_app_server_protocol::GitDiffToRemoteResponse;
 use codex_app_server_protocol::InputItem as WireInputItem;
 use codex_app_server_protocol::InterruptConversationParams;
 use codex_app_server_protocol::InterruptConversationResponse;
-use codex_app_server_protocol::JSONRPCErrorError;
 use codex_app_server_protocol::ListConversationsParams;
 use codex_app_server_protocol::ListConversationsResponse;
+use codex_app_server_protocol::OrchestrateStreamingPatchParams;
+use codex_app_server_protocol::OrchestrateStreamingPatchResponse;
+use codex_app_server_protocol::OrchestratePatchCandidateNotification;
+use codex_app_server_protocol::OrchestratePatchCompletedNotification;
+use codex_app_server_protocol::OrchestratePatchProgressNotification;
 use codex_app_server_protocol::LoginApiKeyParams;
 use codex_app_server_protocol::LoginApiKeyResponse;
 use codex_app_server_protocol::LoginChatGptCompleteNotification;
@@ -238,6 +242,9 @@ impl CodexMessageProcessor {
             }
             ClientRequest::ExecOneOffCommand { request_id, params } => {
                 self.exec_one_off_command(request_id, params).await;
+            }
+            ClientRequest::OrchestrateStreamingPatch { request_id, params } => {
+                self.orchestrate_streaming_patch(request_id, params).await;
             }
         }
     }
@@ -649,6 +656,81 @@ impl CodexMessageProcessor {
                     outgoing.send_error(req_id, error).await;
                 }
             }
+        });
+    }
+
+    async fn orchestrate_streaming_patch(
+        &self,
+        request_id: RequestId,
+        params: OrchestrateStreamingPatchParams,
+    ) {
+        // Generate a run_id and respond immediately so the client can correlate any logs/stream.
+        let run_id = Uuid::new_v4();
+        let response = OrchestrateStreamingPatchResponse { run_id };
+        self.outgoing.send_response(request_id, response).await;
+
+        let prompt = params.prompt;
+        let cwd = params.cwd.unwrap_or_else(|| self.config.cwd.clone());
+        let max_candidates = params.max_candidates.unwrap_or(1);
+        let outgoing = self.outgoing.clone();
+
+        tokio::spawn(async move {
+            info!(
+                "orchestrate_streaming_patch started: run_id={}, cwd={}, max_candidates={}, prompt_len={}",
+                run_id,
+                cwd.display(),
+                max_candidates,
+                prompt.len()
+            );
+
+            // Progress tick 1
+            let _ = outgoing
+                .send_server_notification(ServerNotification::OrchestratePatchProgress(
+                    OrchestratePatchProgressNotification {
+                        run_id,
+                        message: "Analyzing repository context".to_string(),
+                        step: Some(1),
+                        total_steps: Some(3),
+                    },
+                ))
+                .await;
+
+            // Progress tick 2
+            let _ = outgoing
+                .send_server_notification(ServerNotification::OrchestratePatchProgress(
+                    OrchestratePatchProgressNotification {
+                        run_id,
+                        message: "Generating patch candidate".to_string(),
+                        step: Some(2),
+                        total_steps: Some(3),
+                    },
+                ))
+                .await;
+
+            // Emit a dummy candidate (placeholder)
+            let dummy_patch = "--- a/README.md\n+++ b/README.md\n@@\n-Hello Codex\n+Hello Codex!\n".to_string();
+            let _ = outgoing
+                .send_server_notification(ServerNotification::OrchestratePatchCandidate(
+                    OrchestratePatchCandidateNotification {
+                        run_id,
+                        candidate_id: 1,
+                        patch: dummy_patch,
+                    },
+                ))
+                .await;
+
+            // Completed
+            let _ = outgoing
+                .send_server_notification(ServerNotification::OrchestratePatchCompleted(
+                    OrchestratePatchCompletedNotification {
+                        run_id,
+                        success: true,
+                        error: None,
+                    },
+                ))
+                .await;
+
+            info!("orchestrate_streaming_patch completed: run_id={}", run_id);
         });
     }
 

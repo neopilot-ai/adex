@@ -171,6 +171,11 @@ client_request_definitions! {
         params: ExecOneOffCommandParams,
         response: ExecOneOffCommandResponse,
     },
+    /// Orchestrate an agent run that streams patch candidates for a given prompt and repo context.
+    OrchestrateStreamingPatch {
+        params: OrchestrateStreamingPatchParams,
+        response: OrchestrateStreamingPatchResponse,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default, TS)]
@@ -403,6 +408,26 @@ pub struct ExecOneOffCommandResponse {
     pub exit_code: i32,
     pub stdout: String,
     pub stderr: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct OrchestrateStreamingPatchParams {
+    /// Natural language prompt or task description.
+    pub prompt: String,
+    /// Optional working directory; defaults to the server config cwd.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cwd: Option<PathBuf>,
+    /// Optional maximum number of patch candidates to produce.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_candidates: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct OrchestrateStreamingPatchResponse {
+    /// Identifier of the orchestrated run; clients can correlate streamed events.
+    pub run_id: Uuid,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, TS)]
@@ -745,6 +770,38 @@ pub struct LoginChatGptCompleteNotification {
     pub error: Option<String>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct OrchestratePatchProgressNotification {
+    pub run_id: Uuid,
+    /// Human-readable progress message.
+    pub message: String,
+    /// Optional step index (0-based) and total steps if known.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub step: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_steps: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct OrchestratePatchCandidateNotification {
+    pub run_id: Uuid,
+    /// Candidate ordinal id.
+    pub candidate_id: u32,
+    /// Unified diff or patch text.
+    pub patch: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct OrchestratePatchCompletedNotification {
+    pub run_id: Uuid,
+    pub success: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionConfiguredNotification {
@@ -794,6 +851,15 @@ pub enum ServerNotification {
 
     /// The special session configured event for a new or resumed conversation.
     SessionConfigured(SessionConfiguredNotification),
+
+    /// Progress update for an orchestrated streaming patch run.
+    OrchestratePatchProgress(OrchestratePatchProgressNotification),
+
+    /// A patch candidate produced by the orchestrator.
+    OrchestratePatchCandidate(OrchestratePatchCandidateNotification),
+
+    /// Terminal status for an orchestrated streaming patch run.
+    OrchestratePatchCompleted(OrchestratePatchCompletedNotification),
 }
 
 impl ServerNotification {
@@ -802,6 +868,9 @@ impl ServerNotification {
             ServerNotification::AuthStatusChange(params) => serde_json::to_value(params),
             ServerNotification::LoginChatGptComplete(params) => serde_json::to_value(params),
             ServerNotification::SessionConfigured(params) => serde_json::to_value(params),
+            ServerNotification::OrchestratePatchProgress(params) => serde_json::to_value(params),
+            ServerNotification::OrchestratePatchCandidate(params) => serde_json::to_value(params),
+            ServerNotification::OrchestratePatchCompleted(params) => serde_json::to_value(params),
         }
     }
 }
