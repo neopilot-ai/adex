@@ -69,6 +69,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Directory containing pre-installed native binaries to bundle (vendor root).",
     )
+    parser.add_argument(
+        "--skip-native-components",
+        action="store_true",
+        help="Skip native components even if the package normally requires them.",
+    )
     return parser.parse_args()
 
 
@@ -94,13 +99,13 @@ def main() -> int:
         vendor_src = args.vendor_src.resolve() if args.vendor_src else None
         native_components = PACKAGE_NATIVE_COMPONENTS.get(package, [])
 
-        if native_components:
+        if native_components and not args.skip_native_components:
             if vendor_src is None:
                 components_str = ", ".join(native_components)
                 raise RuntimeError(
                     "Native components "
                     f"({components_str}) required for package '{package}'. Provide --vendor-src "
-                    "pointing to a directory containing pre-installed binaries."
+                    "pointing to a directory containing pre-installed binaries, or use --skip-native-components to skip them."
                 )
 
             copy_native_binaries(vendor_src, staging_dir, native_components)

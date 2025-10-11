@@ -177,6 +177,9 @@ def main() -> int:
                 str(pack_output),
             ]
 
+            if args.skip_native_components:
+                cmd.append("--skip-native-components")
+
             if vendor_src is not None:
                 cmd.extend(["--vendor-src", str(vendor_src)])
 
@@ -191,7 +194,11 @@ def main() -> int:
                     print("Or use --skip-native-components to skip packages that require native components.")
                     if len(packages) == 1:  # If this is the only package, exit with error
                         return 1
+                    else:
+                        print(f"Skipping package {package} due to missing native components.")
+                        continue  # Skip to next package
                 else:
+                    # If skip flag is set or no native components, re-raise the error
                     raise
             finally:
                 if not args.keep_staging_dirs:
