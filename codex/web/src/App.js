@@ -4,20 +4,31 @@ import PromptComposer from './components/PromptComposer';
 import DiffViewer from './components/DiffViewer';
 import StreamingDiffViewer from './components/StreamingDiffViewer';
 import ErrorBoundary from './components/ErrorBoundary';
+import SessionRecording from './components/SessionRecording';
+import { SessionRecordingProvider, useSessionRecording } from './contexts/SessionRecordingContext';
 
-function App() {
+function AppContent() {
   const [patches, setPatches] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingComplete, setStreamingComplete] = useState(false);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const { recordEvent } = useSessionRecording();
 
   const handlePromptSubmit = async (prompt, attachments) => {
     setIsLoading(true);
     setIsStreaming(true);
     setStreamingComplete(false);
     setPatches([]);
+    setError(null);
+
+    // Record the prompt submission
+    recordEvent('prompt_submitted', {
+      promptLength: prompt.length,
+      attachmentCount: attachments.length,
+      hasAttachments: attachments.length > 0
+    });
 
     try {
       // Prepare the request payload for streaming
@@ -36,6 +47,13 @@ function App() {
         }
       };
 
+      // Record the API request
+      recordEvent('api_request_sent', {
+        endpoint: '/api/v1/orchestrate',
+        method: 'POST',
+        hasContext: !!requestData.context
+      });
+
       // For now, simulate streaming with regular API call
       // In a full implementation, this would connect to the streaming endpoint
       const response = await fetch('http://localhost:3000/api/v1/orchestrate', {
@@ -52,10 +70,21 @@ function App() {
 
       const result = await response.json();
 
+      // Record successful response
+      recordEvent('api_response_received', {
+        status: response.status,
+        hasResult: !!result.result
+      });
+
       // Convert the backend response to the expected patch format
       if (result.result && result.result.patch) {
         const patches = parsePatchResponse(result.result.patch);
         setPatches(patches);
+
+        // Record patch generation
+        recordEvent('patches_generated', {
+          patchCount: patches.length
+        });
       } else {
         const mockPatches = [
           {
@@ -66,6 +95,11 @@ function App() {
           }
         ];
         setPatches(mockPatches);
+
+        // Record fallback patch generation
+        recordEvent('fallback_patches_generated', {
+          reason: 'No patch in response'
+        });
       }
 
       setStreamingComplete(true);
@@ -74,6 +108,13 @@ function App() {
       console.error('Error submitting prompt:', error);
       setError(error);
       setRetryCount(prev => prev + 1);
+
+      // Record the error
+      recordEvent('prompt_error', {
+        errorType: error.name,
+        errorMessage: error.message,
+        retryCount: retryCount + 1
+      });
     } finally {
       setIsLoading(false);
       setIsStreaming(false);
@@ -81,9 +122,13 @@ function App() {
   };
 
   const handleRePrompt = (selectedPatches) => {
+    // Record the re-prompt action
+    recordEvent('reprompt_requested', {
+      selectedPatchCount: selectedPatches.length,
+      patchIndices: selectedPatches.map(p => p.patchIndex)
+    });
+
     // For now, just log the selected patches for re-prompting
-    // In a full implementation, this would open a re-prompt dialog
-    // and send a new request to the backend with the selected context
     console.log('Re-prompting with selected patches:', selectedPatches);
 
     // Extract the original prompt and add context about the selected changes
@@ -95,8 +140,29 @@ function App() {
     const refinedPrompt = `${basePrompt}\n\nSelected changes:\n${contextInfo}\n\nOriginal request: ${prompt}`;
 
     // TODO: Open re-prompt dialog with refinedPrompt
-    // For now, just show an alert
     alert(`Re-prompt dialog would open with refined prompt for ${selectedPatches.length} selected change(s)`);
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setRetryCount(0);
+
+    // Record retry action
+    recordEvent('retry_requested', {
+      previousRetryCount: retryCount
+    });
+  };
+
+  const clearResults = () => {
+    setPatches([]);
+    setError(null);
+    setStreamingComplete(false);
+
+    // Record clear action
+    recordEvent('results_cleared', {
+      hadPatches: patches.length > 0,
+      hadError: !!error
+    });
   };
 
   const handleStreamingComplete = (result) => {
@@ -186,63 +252,11 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Codex - Agentic Development Environment</h1>
-      </header>
-      <main className="App-main">
-        <div className="prompt-section">
-          <PromptComposer onSubmit={handlePromptSubmit} isLoading={isLoading} />
-        </div>
-
-        {error && (
-          <div className="error-section">
-            <div className="error-banner">
-              <div className="error-header">
-                <span className="error-icon">❌</span>
-                <h3>Request Failed</h3>
-              </div>
-              <p className="error-message">{error.message}</p>
-              <div className="error-actions">
-                <button onClick={handleRetry} className="retry-button">
-                  🔄 Retry Request
-                </button>
-                <button onClick={clearResults} className="clear-button">
-                  🗑️ Clear Results
-                </button>
-              </div>
-              {retryCount > 1 && (
-                <p className="retry-warning">
-                  ⚠️ Multiple failures detected. Please check your connection and backend server status.
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {isStreaming && (
-          <div className="streaming-section">
-            <StreamingDiffViewer
-              isStreaming={isStreaming}
-              onStreamingComplete={handleStreamingComplete}
-              onStreamingError={handleStreamingError}
-            />
-          </div>
-        )}
-
-        {patches.length > 0 && !isStreaming && !error && (
-          <div className="diff-section">
-            <div className="results-header">
-              <h2>Generated Patches</h2>
-              <button onClick={clearResults} className="clear-results-button">
-                🗑️ Clear
-              </button>
-            </div>
-            <DiffViewer patches={patches} onRePrompt={handleRePrompt} />
-          </div>
-        )}
-      </main>
-    </div>
+    <ErrorBoundary>
+      <SessionRecordingProvider>
+        <AppContent />
+      </SessionRecordingProvider>
+    </ErrorBoundary>
   );
 }
 

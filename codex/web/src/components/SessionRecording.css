@@ -1,0 +1,165 @@
+.session-recording {
+  padding: 20px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.recording-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.start-recording-btn,
+.stop-recording-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.start-recording-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.start-recording-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.stop-recording-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.stop-recording-btn:hover {
+  background: #545b62;
+  transform: translateY(-1px);
+}
+
+.recording-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+}
+
+.recording-indicator {
+  color: #dc3545;
+  font-weight: bold;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.session-info {
+  font-size: 14px;
+  color: #856404;
+  font-weight: 500;
+}
+
+.session-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.playback-btn,
+.export-btn,
+.clear-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.playback-btn {
+  background: #007bff;
+  color: white;
+}
+
+.playback-btn:hover {
+  background: #0056b3;
+}
+
+.export-btn {
+  background: #28a745;
+  color: white;
+}
+
+.export-btn:hover {
+  background: #1e7e34;
+}
+
+.clear-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.clear-btn:hover {
+  background: #c82333;
+}
+
+.session-stats {
+  display: flex;
+  gap: 20px;
+  padding: 10px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 14px;
+  color: #495057;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .recording-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .session-actions {
+    flex-wrap: wrap;
+  }
+
+  .session-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
