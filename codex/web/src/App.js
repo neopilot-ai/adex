@@ -80,15 +80,23 @@ function App() {
     }
   };
 
-  const handleRetry = () => {
-    setError(null);
-    setRetryCount(0);
-  };
+  const handleRePrompt = (selectedPatches) => {
+    // For now, just log the selected patches for re-prompting
+    // In a full implementation, this would open a re-prompt dialog
+    // and send a new request to the backend with the selected context
+    console.log('Re-prompting with selected patches:', selectedPatches);
 
-  const clearResults = () => {
-    setPatches([]);
-    setError(null);
-    setStreamingComplete(false);
+    // Extract the original prompt and add context about the selected changes
+    const basePrompt = "Please refine the following code changes based on the selected sections:";
+    const contextInfo = selectedPatches.map(({ patch, patchIndex, hunkIndex }) =>
+      `File: ${patch.filePath}, Change ${patchIndex + 1}, Section ${hunkIndex + 1}`
+    ).join('\n');
+
+    const refinedPrompt = `${basePrompt}\n\nSelected changes:\n${contextInfo}\n\nOriginal request: ${prompt}`;
+
+    // TODO: Open re-prompt dialog with refinedPrompt
+    // For now, just show an alert
+    alert(`Re-prompt dialog would open with refined prompt for ${selectedPatches.length} selected change(s)`);
   };
 
   const handleStreamingComplete = (result) => {
@@ -230,7 +238,7 @@ function App() {
                 🗑️ Clear
               </button>
             </div>
-            <DiffViewer patches={patches} />
+            <DiffViewer patches={patches} onRePrompt={handleRePrompt} />
           </div>
         )}
       </main>
