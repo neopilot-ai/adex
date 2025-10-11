@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: codex-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: codex.rules
+    rules:
+    - alert: HighErrorRate
+      expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High error rate on {{ $labels.instance }}"
+        description: "Error rate is {{ $value }}"
