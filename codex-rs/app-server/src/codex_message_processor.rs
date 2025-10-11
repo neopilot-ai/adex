@@ -1,3 +1,4 @@
+use codex_app_server_protocol::JSONRPCErrorError;
 use crate::error_code::INTERNAL_ERROR_CODE;
 use crate::error_code::INVALID_REQUEST_ERROR_CODE;
 use crate::fuzzy_file_search::run_fuzzy_file_search;
