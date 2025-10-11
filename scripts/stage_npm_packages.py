@@ -56,6 +56,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Retain temporary staging directories instead of deleting them.",
     )
+    parser.add_argument(
+        "--skip-native-components",
+        action="store_true",
+        help="Skip packages that require native components that cannot be built.",
+    )
     return parser.parse_args()
 
 
@@ -90,20 +95,26 @@ def resolve_release_workflow(version: str) -> dict:
     return workflow
 
 
-def resolve_workflow_url(version: str, override: str | None) -> tuple[str, str | None]:
+def resolve_workflow_url(version: str, override: str | None) -> tuple[str | None, str | None]:
     if override:
         return override, None
 
-    workflow = resolve_release_workflow(version)
-    return workflow["url"], workflow.get("headSha")
+    try:
+        workflow = resolve_release_workflow(version)
+        return workflow["url"], workflow.get("headSha")
+    except RuntimeError as e:
+        print(f"Warning: {e}")
+        print("Continuing without workflow artifacts.")
+        print("Note: Native components will be skipped if they cannot be built from source.")
+        return None, None
 
 
 def install_native_components(
-    workflow_url: str,
+    workflow_url: str | None,
     components: set[str],
     vendor_root: Path,
 ) -> None:
-    if not components:
+    if not components or not workflow_url:
         return
 
     cmd = [str(INSTALL_NATIVE_DEPS), "--workflow-url", workflow_url]
@@ -140,9 +151,12 @@ def main() -> int:
             workflow_url, resolved_head_sha = resolve_workflow_url(
                 args.release_version, args.workflow_url
             )
-            vendor_temp_root = Path(tempfile.mkdtemp(prefix="npm-native-", dir=runner_temp))
-            install_native_components(workflow_url, native_components, vendor_temp_root)
-            vendor_src = vendor_temp_root / "vendor"
+            if workflow_url:
+                vendor_temp_root = Path(tempfile.mkdtemp(prefix="npm-native-", dir=runner_temp))
+                install_native_components(workflow_url, native_components, vendor_temp_root)
+                vendor_src = vendor_temp_root / "vendor"
+            else:
+                print("Skipping native component installation due to missing workflow artifacts.")
 
         if resolved_head_sha:
             print(f"should `git checkout {resolved_head_sha}`")
@@ -168,11 +182,20 @@ def main() -> int:
 
             try:
                 run_command(cmd)
+                final_messsages.append(f"Staged {package} at {pack_output}")
+            except subprocess.CalledProcessError as e:
+                if native_components and not args.skip_native_components:
+                    print(f"Error: Failed to stage {package} due to missing native components.")
+                    print("This package requires native binaries that could not be built or downloaded.")
+                    print("Consider running this script in an environment with the required build tools.")
+                    print("Or use --skip-native-components to skip packages that require native components.")
+                    if len(packages) == 1:  # If this is the only package, exit with error
+                        return 1
+                else:
+                    raise
             finally:
                 if not args.keep_staging_dirs:
                     shutil.rmtree(staging_dir, ignore_errors=True)
-
-            final_messsages.append(f"Staged {package} at {pack_output}")
     finally:
         if vendor_temp_root is not None and not args.keep_staging_dirs:
             shutil.rmtree(vendor_temp_root, ignore_errors=True)
