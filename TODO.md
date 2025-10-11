@@ -129,24 +129,24 @@
 ### Product / PM
 
 * [ ] Define supported "happy-path" languages & frameworks for v1 (e.g., TypeScript/Node.js, Python/Flask, Go)
-* [ ] Create sample repos (1: simple web app, 2: CLI tool, 3: monorepo) for demo/test
+* [x] Create sample repos (1: simple web app, 2: CLI tool, 3: monorepo) for demo/test
 * [ ] Define non-goals and scope for MVP
 * [ ] User study plan & recruitment for Beta
 
 ### Frontend (Web UI + Editor)
 
-* [ ] Build prompt composer component with attachments: files, images, URLs
-* [ ] Build Diff viewer component: file tree, side-by-side diffs, hunk actions
+* [x] Build prompt composer component with attachments: files, images, URLs
+* [x] Build Diff viewer component: file tree, side-by-side diffs, hunk actions
 * [ ] Implement re-prompt flow (context scoping + agent re-run)
 * [ ] Implement session recording + playback (for demos & audits)
 * [ ] Accessibility and keyboard navigation
 
 ### Backend (API, Agents Orchestration)
 
-* [ ] Agent orchestration service (accept prompt, call model, stream edits)
-* [ ] Context extractor: repo scanner, open-file extractor, test harness detector
-* [ ] Diff generator: convert streaming edits to git diffs, produce patch candidates
-* [ ] PR manager: branch creation, commit signing, PR body generation
+* [x] Agent orchestration service (accept prompt, call model, stream edits)
+* [x] Context extractor: repo scanner, open-file extractor, test harness detector
+* [x] Diff generator: convert streaming edits to git diffs, produce patch candidates
+* [x] PR manager: branch creation, commit signing, PR body generation
 * [ ] Task queue + retry semantics for long-running agents
 
 ### AI / Models (Codex & helpers)
@@ -167,7 +167,7 @@
 
 ### Integrations
 
-* [ ] GitHub integration (OAuth/GitHub App) to read repo, create branches, open PRs
+* [x] GitHub integration (OAuth/GitHub App) to read repo, create branches, open PRs
 * [ ] CI templates for GitHub Actions / GitLab / Jenkins
 * [ ] Preview environment integration (Vercel, Netlify, Docker ephemeral)
 * [ ] Logging/Monitoring integrations: Sentry, Datadog, NewRelic
@@ -326,7 +326,7 @@ codex/
 
 ## Next immediate actions (today)
 
-* [ ] Create sample Node.js + Python sample repos in `codex/samples`.
-* [ ] Implement BE-002: orchestrator streaming patch endpoint (PR skeleton created).
-* [ ] Implement FE-001: prompt composer connected to orchestrator (basic UI wired).
-* [ ] Create GH App skeleton in `codex/integrations/github` to enable push/PR flow.
+* [x] Create sample Node.js + Python sample repos in `codex/samples`.
+* [x] Implement BE-002: orchestrator streaming patch endpoint (PR skeleton created).
+* [x] Implement FE-001: prompt composer connected to orchestrator (basic UI wired).
+* [x] Create GH App skeleton in `codex/integrations/github` to enable push/PR flow.
